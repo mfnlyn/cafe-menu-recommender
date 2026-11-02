@@ -423,27 +423,223 @@ function selectOption(key, value) {
 }
 
 // ===== 주문서 화면 =====
+let lastOrder = null;  // 이미지로 저장할 때 쓰는 마지막 주문서 내용
+
 function showOrder() {
-  document.getElementById("order-emoji").textContent = picked.emoji;
-  document.getElementById("order-name").textContent = displayName(picked);
-  document.getElementById("order-list").innerHTML = visibleGroups(picked)
-    .map((g) => {
-      const value = g.multi ? (custom[g.key].join(", ") || "없음") : custom[g.key];
-      return `<li><span>${g.title}</span><i class="rc-dots"></i><strong>${value}</strong></li>`;
-    })
-    .join("");
+  const rows = visibleGroups(picked).map((g) => [
+    g.title,
+    g.multi ? (custom[g.key].join(", ") || "없음") : custom[g.key],
+  ]);
 
   // 영수증 느낌을 위한 주문번호·일시·바코드 번호 (실제 주문과는 무관)
   const now = new Date();
   const pad = (n) => String(n).padStart(2, "0");
+  const ymd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
   const orderNo = String(Math.floor(Math.random() * 9000) + 1000);
-  document.getElementById("order-no").textContent = `#${orderNo}`;
-  document.getElementById("order-date").textContent =
-    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  document.getElementById("order-code").textContent =
-    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${orderNo}`;
+  lastOrder = {
+    emoji: picked.emoji,
+    name: displayName(picked),
+    rows,
+    orderNo: `#${orderNo}`,
+    date: `${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6)} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    code: `${ymd}-${orderNo}`,
+  };
+
+  document.getElementById("order-emoji").textContent = lastOrder.emoji;
+  document.getElementById("order-name").textContent = lastOrder.name;
+  document.getElementById("order-list").innerHTML = rows
+    .map(([title, value]) => `<li><span>${title}</span><i class="rc-dots"></i><strong>${value}</strong></li>`)
+    .join("");
+  document.getElementById("order-no").textContent = lastOrder.orderNo;
+  document.getElementById("order-date").textContent = lastOrder.date;
+  document.getElementById("order-code").textContent = lastOrder.code;
+  document.getElementById("save-btn").textContent = SAVE_LABEL;
 
   showScreen("order");
+}
+
+// ===== 영수증 이미지로 저장 =====
+// 화면의 영수증과 같은 모양을 캔버스에 직접 그려서 PNG로 만든다. (외부 라이브러리 없음)
+const SAVE_LABEL = "🧾 영수증 이미지로 저장";
+const RC = {
+  width: 360, pad: 22, margin: 20, tooth: 14,
+  bg: "#efe0cc", paper: "#fffefb", ink: "#3b2a20", muted: "#8a7363", latte: "#c69c72", espresso: "#4a2c1d",
+};
+const MONO = '"Nanum Gothic Coding", monospace';
+const SERIF = '"Gowun Batang", serif';
+
+// 값이 길면 ", " 단위로 줄을 나눈다. (예: 토핑 여러 개)
+function wrapText(ctx, str, maxWidth) {
+  const lines = [];
+  let line = "";
+  str.split(", ").forEach((word) => {
+    const next = line ? `${line}, ${word}` : word;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line + ",");
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+  lines.push(line);
+  return lines;
+}
+
+// 영수증 내용을 그린다. draw가 false면 그리지 않고 높이만 계산한다. 종이 아래 끝 y를 돌려준다.
+function paintReceipt(ctx, order, draw) {
+  const left = RC.margin + RC.pad;
+  const right = RC.margin + RC.width - RC.pad;
+  const center = RC.margin + RC.width / 2;
+  let y = RC.margin + 40;
+
+  const text = (str, x, font, color, align = "left") => {
+    if (!draw) return;
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.fillText(str, x, y);
+  };
+  const line = (dash, color, alpha = 1, from = left, to = right, at = y) => {
+    if (!draw || to <= from) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    ctx.moveTo(from, at);
+    ctx.lineTo(to, at);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  text("☕ 오늘의 한 잔", center, `700 20px ${SERIF}`, RC.espresso, "center");
+  y += 20;
+  text("O R D E R   R E C E I P T", center, `11px ${MONO}`, RC.muted, "center");
+  y += 28;
+  [["주문번호", order.orderNo], ["일시", order.date]].forEach(([k, v]) => {
+    text(k, left, `12px ${MONO}`, RC.muted);
+    text(v, right, `12px ${MONO}`, RC.muted, "right");
+    y += 18;
+  });
+  line([4, 3], RC.ink, 0.5);
+  y += 32;
+  text(`${order.emoji} ${order.name}`, left, `700 16px ${MONO}`, RC.ink);
+  text("x 1", right, `700 14px ${MONO}`, RC.ink, "right");
+  y += 28;
+
+  order.rows.forEach(([title, value]) => {
+    const label = `- ${title}`;
+    ctx.font = `14px ${MONO}`;
+    const labelEnd = left + 10 + ctx.measureText(label).width + 6;
+    ctx.font = `700 14px ${MONO}`;
+    const lines = wrapText(ctx, value, (right - left) * 0.6);
+    const valueStart = right - ctx.measureText(lines[0]).width - 6;
+    text(label, left + 10, `14px ${MONO}`, RC.muted);
+    line([1.5, 3], RC.latte, 1, labelEnd, valueStart, y - 4);
+    lines.forEach((l, i) => {
+      text(l, right, `700 14px ${MONO}`, RC.ink, "right");
+      if (i < lines.length - 1) y += 20;
+    });
+    y += 26;
+  });
+
+  y -= 8;
+  line([4, 3], RC.ink, 0.5);
+  y += 4;
+  line([4, 3], RC.ink, 0.5);
+  y += 32;
+  text("맛있게 준비해 드릴게요", center, `700 15px ${SERIF}`, RC.ink, "center");
+  y += 18;
+  text("THANK YOU · SEE YOU AGAIN", center, `10px ${MONO}`, RC.muted, "center");
+  y += 14;
+  if (draw) drawBarcode(ctx, left + 12, y, right - left - 24, 42);
+  y += 42 + 18;
+  text(order.code, center, `11px ${MONO}`, RC.muted, "center");
+  return y + 24;
+}
+
+// 화면의 바코드와 같은 무늬 (16px마다 막대 4개 반복)
+function drawBarcode(ctx, x, y, width, height) {
+  const bars = [[0, 2], [4, 1], [8, 3], [12, 1]];
+  ctx.fillStyle = RC.ink;
+  for (let p = 0; p < width; p += 16) {
+    bars.forEach(([offset, w]) => {
+      if (p + offset + w <= width) ctx.fillRect(x + p + offset, y, w, height);
+    });
+  }
+}
+
+// 위아래가 지그재그인 영수증 종이 모양
+function paperPath(ctx, x, top, width, bottom) {
+  const count = Math.round(width / RC.tooth);
+  const t = width / count;
+  const depth = t / 2;
+  ctx.beginPath();
+  ctx.moveTo(x, top + depth);
+  for (let i = 0; i < count; i++) {
+    ctx.lineTo(x + i * t + t / 2, top);
+    ctx.lineTo(x + (i + 1) * t, top + depth);
+  }
+  ctx.lineTo(x + width, bottom - depth);
+  for (let i = count - 1; i >= 0; i--) {
+    ctx.lineTo(x + i * t + t / 2, bottom);
+    ctx.lineTo(x + i * t, bottom - depth);
+  }
+  ctx.closePath();
+}
+
+async function receiptCanvas(order) {
+  await document.fonts.ready;
+  const scale = 2;
+  const paperBottom = paintReceipt(document.createElement("canvas").getContext("2d"), order, false);
+  const width = RC.width + RC.margin * 2;
+  const height = paperBottom + RC.margin;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+  ctx.fillStyle = RC.bg;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.save();
+  ctx.shadowColor = "rgba(74, 44, 29, 0.22)";
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 6;
+  paperPath(ctx, RC.margin, RC.margin, RC.width, paperBottom);
+  ctx.fillStyle = RC.paper;
+  ctx.fill();
+  ctx.restore();
+
+  paintReceipt(ctx, order, true);
+  return canvas;
+}
+
+// 휴대폰에서는 공유 창(사진에 저장 등)을 띄우고, 컴퓨터에서는 파일로 내려받는다.
+async function saveReceipt() {
+  const btn = document.getElementById("save-btn");
+  const canvas = await receiptCanvas(lastOrder);
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  const name = `receipt-${lastOrder.code}.png`;
+  const file = new File([blob], name, { type: "image/png" });
+
+  const isPhone = matchMedia("(pointer: coarse)").matches;
+  if (isPhone && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "카페 주문서" });
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") return;
+    }
+  }
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  btn.textContent = "저장했어요! ✓";
 }
 
 // ===== 이벤트 =====
@@ -461,6 +657,7 @@ document.getElementById("custom-btn").addEventListener("click", openCustom);
 document.getElementById("custom-back-btn").addEventListener("click", () => showScreen("result"));
 document.getElementById("custom-done-btn").addEventListener("click", showOrder);
 document.getElementById("order-restart-btn").addEventListener("click", () => showScreen("start"));
+document.getElementById("save-btn").addEventListener("click", saveReceipt);
 document.getElementById("alt-list").addEventListener("click", (e) => {
   const card = e.target.closest(".alt-card");
   if (card) pickAlternative(Number(card.dataset.index));
