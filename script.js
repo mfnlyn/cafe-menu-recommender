@@ -1,40 +1,56 @@
 // ===== 메뉴 데이터 (15개) =====
 // type: 메뉴 종류(coffee 에스프레소 커피 / coldbrew 콜드브루 / latte 논커피 라떼 / tea 차 / ade 에이드)
 // temps: 제공 가능한 온도, sweet: 단맛, caffeine: 카페인, milk: 우유 포함 여부
+// flavors: 맛 계열(coffee 커피 / fruit 상큼한 과일 / nutty 고소·부드러움 / tea 차), heavy: 든든한 음료인지
 const MENUS = [
   { name: "아메리카노", emoji: "☕", type: "coffee", temps: ["hot", "ice"], sweet: false, caffeine: true, milk: false,
+    flavors: ["coffee"], heavy: false,
     desc: "에스프레소에 물을 더해 깔끔하고 쌉싸름한 커피 본연의 맛을 느낄 수 있어요." },
   { name: "콜드브루", emoji: "🧊", type: "coldbrew", temps: ["ice"], sweet: false, caffeine: true, milk: false,
+    flavors: ["coffee"], heavy: false,
     desc: "찬물로 오랜 시간 우려내 쓴맛이 적고 부드러우면서도 향이 진해요." },
   { name: "꿀 아메리카노", emoji: "🍯", type: "coffee", temps: ["hot", "ice"], sweet: true, caffeine: true, milk: false,
+    flavors: ["coffee"], heavy: false,
     desc: "아메리카노에 꿀을 더해 은은하게 달콤하면서도 우유 없이 가볍게 즐길 수 있어요." },
   { name: "복숭아 아이스티", emoji: "🍑", type: "tea", temps: ["ice"], sweet: true, caffeine: true, milk: false,
+    flavors: ["fruit", "tea"], heavy: false,
     desc: "홍차 베이스에 상큼한 복숭아 맛이 더해져 시원하고 달콤해요. 커피가 부담될 때 좋아요." },
   { name: "카페라떼", emoji: "🥛", type: "coffee", temps: ["hot", "ice"], sweet: false, caffeine: true, milk: true,
+    flavors: ["coffee", "nutty"], heavy: false,
     desc: "에스프레소와 우유가 어우러져 고소하고 부드러운, 달지 않은 기본 라떼예요." },
   { name: "바닐라라떼", emoji: "🍦", type: "coffee", temps: ["hot", "ice"], sweet: true, caffeine: true, milk: true,
+    flavors: ["coffee", "nutty"], heavy: true,
     desc: "바닐라 시럽의 달콤한 향이 라떼의 고소함과 잘 어울리는 인기 메뉴예요." },
   { name: "카라멜 마키아토", emoji: "🍮", type: "coffee", temps: ["hot", "ice"], sweet: true, caffeine: true, milk: true,
+    flavors: ["coffee"], heavy: true,
     desc: "우유 위에 에스프레소와 카라멜 드리즐을 올려 진한 단맛과 커피 향을 함께 즐길 수 있어요." },
   { name: "카페모카", emoji: "🍫", type: "coffee", temps: ["hot", "ice"], sweet: true, caffeine: true, milk: true,
+    flavors: ["coffee"], heavy: true,
     desc: "초콜릿과 에스프레소, 우유가 만나 달콤 쌉싸름한 맛이 나요. 당 충전이 필요할 때 추천해요." },
   { name: "녹차라떼", emoji: "🍵", type: "latte", temps: ["hot", "ice"], sweet: true, caffeine: true, milk: true,
+    flavors: ["tea", "nutty"], heavy: true,
     desc: "말차의 쌉싸름함과 우유의 고소함, 은은한 단맛이 어우러진 커피 대신 메뉴예요." },
   { name: "디카페인 라떼", emoji: "🌙", type: "coffee", temps: ["hot", "ice"], sweet: false, caffeine: false, milk: true,
+    flavors: ["coffee", "nutty"], heavy: false,
     desc: "카페인을 뺀 원두로 만들어 늦은 시간에도 부담 없이 고소한 라떼를 즐길 수 있어요." },
   { name: "딸기 라떼", emoji: "🍓", type: "latte", temps: ["ice"], sweet: true, caffeine: false, milk: true,
+    flavors: ["fruit"], heavy: true,
     desc: "새콤달콤한 딸기청과 우유가 어우러진 카페인 없는 달콤한 음료예요." },
   { name: "고구마 라떼", emoji: "🍠", type: "latte", temps: ["hot", "ice"], sweet: true, caffeine: false, milk: true,
+    flavors: ["nutty"], heavy: true,
     desc: "달콤하고 든든한 고구마와 우유로 만들어 따뜻하게 마시면 특히 포근해요." },
   { name: "자몽 에이드", emoji: "🍊", type: "ade", temps: ["ice"], sweet: true, caffeine: false, milk: false,
+    flavors: ["fruit"], heavy: false,
     desc: "톡 쏘는 탄산과 새콤달콤한 자몽이 만나 기분까지 상쾌해지는 음료예요." },
   { name: "유자차", emoji: "🍋", type: "tea", temps: ["hot", "ice"], sweet: true, caffeine: false, milk: false,
+    flavors: ["fruit", "tea"], heavy: false,
     desc: "향긋한 유자청으로 만들어 달콤하고 상큼해요. 따뜻하게 마시면 몸이 녹아요." },
   { name: "캐모마일 티", emoji: "🌼", type: "tea", temps: ["hot", "ice"], sweet: false, caffeine: false, milk: false,
+    flavors: ["tea"], heavy: false,
     desc: "꽃향이 은은한 허브티로 달지 않고 카페인도 없어 편안하게 쉬고 싶을 때 좋아요." },
 ];
 
-// ===== 질문 데이터 (4개) =====
+// ===== 질문 데이터 (6개) =====
 const QUESTIONS = [
   {
     key: "temp",
@@ -42,6 +58,16 @@ const QUESTIONS = [
     options: [
       { label: "따뜻하게", emoji: "🔥", value: "hot" },
       { label: "시원하게", emoji: "🧊", value: "ice" },
+    ],
+  },
+  {
+    key: "flavor",
+    text: "어떤 맛이 끌려요?",
+    options: [
+      { label: "커피 맛", emoji: "☕", value: "coffee" },
+      { label: "상큼한 과일 맛", emoji: "🍋", value: "fruit" },
+      { label: "고소하고 부드러운 맛", emoji: "🌰", value: "nutty" },
+      { label: "은은한 차 맛", emoji: "🍵", value: "tea" },
     ],
   },
   {
@@ -66,6 +92,14 @@ const QUESTIONS = [
     options: [
       { label: "부드럽게 우유 넣어서", emoji: "🥛", value: true },
       { label: "우유 없이 깔끔하게", emoji: "💧", value: false },
+    ],
+  },
+  {
+    key: "heavy",
+    text: "지금 배고픈 정도는 어때요?",
+    options: [
+      { label: "가볍게 마시고 싶어요", emoji: "🪶", value: false },
+      { label: "든든하게 채우고 싶어요", emoji: "🍠", value: true },
     ],
   },
 ];
@@ -151,14 +185,16 @@ function selectAnswer(key, value) {
 }
 
 // ===== 추천 로직 =====
-// 질문 4개 중 몇 개가 맞는지로 일치도(%)를 계산하고, 일치도가 높은 순으로 줄 세운다.
+// 질문 6개 중 몇 개가 맞는지로 일치도(%)를 계산하고, 일치도가 높은 순으로 줄 세운다.
 // 정확히 맞는 메뉴가 없어도 일치도가 가장 높은 메뉴가 1등이 되므로 빈 결과가 없다.
 function matchRate(menu, a) {
   let score = 0;
   if (menu.temps.includes(a.temp)) score++;
+  if (menu.flavors.includes(a.flavor)) score++;
   if (menu.sweet === a.sweet) score++;
   if (menu.caffeine === a.caffeine) score++;
   if (menu.milk === a.milk) score++;
+  if (menu.heavy === a.heavy) score++;
   return Math.round((score / QUESTIONS.length) * 100);
 }
 
@@ -169,12 +205,21 @@ function rankMenus(a) {
     .sort((x, y) => y.rate - x.rate || x.tiebreak - y.tiebreak);
 }
 
+const FLAVOR_WORDS = {
+  coffee: { reason: "커피 향 가득한", tag: "#커피" },
+  fruit: { reason: "상큼한 과일 맛의", tag: "#상큼과일" },
+  nutty: { reason: "고소하고 부드러운", tag: "#고소부드러움" },
+  tea: { reason: "은은한 차 향의", tag: "#차" },
+};
+
 function makeReason(menu, a) {
   const picks = [
     a.temp === "hot" ? "따뜻한" : "시원한",
+    FLAVOR_WORDS[a.flavor].reason,
     a.sweet ? "달콤한" : "달지 않은",
     a.caffeine ? "카페인이 있는" : "카페인 없는",
     a.milk ? "우유가 들어간" : "우유 없는",
+    a.heavy ? "든든한" : "가벼운",
   ];
   return `${picks.join(", ")} 음료를 원하셨죠? ${menu.name}${topicParticle(menu.name)} ${menu.desc}`;
 }
@@ -197,9 +242,11 @@ function showResult() {
 
   const tags = [
     answers.temp === "hot" ? "#따뜻하게" : "#시원하게",
+    FLAVOR_WORDS[menu.flavors.includes(answers.flavor) ? answers.flavor : menu.flavors[0]].tag,
     menu.sweet ? "#달콤" : "#달지않음",
     menu.caffeine ? "#카페인" : "#노카페인",
     menu.milk ? "#우유" : "#우유없음",
+    menu.heavy ? "#든든" : "#가볍게",
   ];
   document.getElementById("result-tags").innerHTML =
     tags.map((t) => `<span class="tag">${t}</span>`).join("");
