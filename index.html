@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>카페 메뉴 추천 테스트</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -42,7 +45,29 @@
         <h3>이것도 좋아요</h3>
         <div id="alt-list" class="alt-list"></div>
       </div>
-      <button id="restart-btn" class="btn primary">다시 하기</button>
+      <button id="custom-btn" class="btn primary">커스텀하기</button>
+      <button id="restart-btn" class="btn secondary">다시 하기</button>
+    </section>
+
+    <!-- 커스텀 화면 -->
+    <section id="custom-screen" class="screen">
+      <p class="result-label">나만의 음료 만들기</p>
+      <h2 id="custom-name" class="result-name"></h2>
+      <div id="custom-options" class="custom-options"></div>
+      <button id="custom-done-btn" class="btn primary">완료</button>
+      <button id="custom-back-btn" class="btn text">← 추천 결과로</button>
+    </section>
+
+    <!-- 주문서 화면 -->
+    <section id="order-screen" class="screen">
+      <div class="order-card">
+        <p class="order-title">주 문 서</p>
+        <div id="order-emoji" class="order-emoji"></div>
+        <h2 id="order-name" class="result-name"></h2>
+        <ul id="order-list" class="order-list"></ul>
+        <p class="order-footer">맛있게 준비해 드릴게요 ☕</p>
+      </div>
+      <button id="order-restart-btn" class="btn primary">다시 하기</button>
     </section>
   </main>
 

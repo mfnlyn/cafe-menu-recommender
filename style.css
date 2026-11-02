@@ -25,7 +25,7 @@ body {
   background-image: radial-gradient(circle at 20% 10%, #fbf3e8 0%, transparent 45%),
                     radial-gradient(circle at 85% 90%, #ead8c2 0%, transparent 40%);
   color: var(--text);
-  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  font-family: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   line-height: 1.6;
 }
 
@@ -281,5 +281,140 @@ h1 {
 
 .alt-rate {
   font-size: 12px;
+  color: var(--muted);
+}
+
+/* 제목은 감성적인 명조 계열로 */
+h1,
+.question,
+.result-name,
+.alt-name {
+  font-family: "Gowun Batang", "Nanum Myeongjo", serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.btn.secondary {
+  width: 100%;
+  margin-top: 10px;
+  padding: 15px;
+  border-radius: 14px;
+  border: 2px solid var(--latte);
+  background: transparent;
+  color: var(--brown);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.btn.secondary:hover {
+  background: var(--cream);
+}
+
+/* 커스텀 화면 */
+.custom-options {
+  text-align: left;
+  margin: 8px 0 28px;
+}
+
+.opt-group {
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--cream);
+}
+
+.opt-group:last-child {
+  border-bottom: none;
+}
+
+.opt-group h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--brown);
+  margin-bottom: 10px;
+}
+
+.opt-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 8px 16px;
+  border: 2px solid var(--cream);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.chip:hover {
+  border-color: var(--latte);
+}
+
+.chip.selected {
+  border-color: var(--brown);
+  background: var(--brown);
+  color: #fff;
+}
+
+/* 주문서 화면 */
+.order-card {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 28px 22px 22px;
+  border: 2px dashed var(--latte);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.order-title {
+  font-family: "Gowun Batang", serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+}
+
+.order-emoji {
+  font-size: 56px;
+  margin: 8px 0 4px;
+}
+
+.order-list {
+  list-style: none;
+  margin: 12px 0 16px;
+  border-top: 1px dashed var(--latte);
+  text-align: left;
+}
+
+.order-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 2px;
+  border-bottom: 1px dashed var(--cream);
+  font-size: 15px;
+}
+
+.order-list li span {
+  color: var(--muted);
+}
+
+.order-list li strong {
+  color: var(--espresso);
+  text-align: right;
+  word-break: keep-all;
+}
+
+.order-footer {
+  font-size: 14px;
   color: var(--muted);
 }
