@@ -131,7 +131,8 @@ function toppingChoices(menu) {
 }
 
 // ===== 상태 =====
-let current = 0;
+let current = 0;   // 지금 묻고 있는 질문 번호 (QUESTIONS 인덱스)
+let asked = [];    // 실제로 물어본 질문 번호들 (건너뛴 질문은 빠짐)
 let answers = {};
 let picked = null;  // 결과로 추천된 1등 메뉴
 let custom = {};    // 고른 커스텀 옵션
@@ -169,8 +170,9 @@ function userMsg(text, isNew) {
   return `<div class="msg user${isNew ? " new" : ""}"><div class="bubble">${text}</div></div>`;
 }
 
-function questionHtml(i) {
-  return `<span class="q-no">Q${i + 1}</span>${QUESTIONS[i].text}`;
+// no: 화면에 보이는 질문 순번, qi: QUESTIONS 인덱스
+function questionHtml(no, qi) {
+  return `<span class="q-no">Q${no}</span>${QUESTIONS[qi].text}`;
 }
 
 function answerText(q) {
@@ -187,26 +189,56 @@ function scrollChat() {
   });
 }
 
+// ===== 질문 흐름: 앞선 답에 맞춰 질문을 고른다 =====
+function matches(menu, key, value) {
+  if (key === "temp") return menu.temps.includes(value);
+  if (key === "flavor") return menu.flavors.includes(value);
+  return menu[key] === value;
+}
+
+// 지금까지의 답에 모두 맞는 메뉴
+function remainingMenus() {
+  return MENUS.filter((m) => Object.entries(answers).every(([k, v]) => matches(m, k, v)));
+}
+
+// 남은 메뉴로 나올 수 있는 선택지만 보여준다. (예: "우유 없이"를 고르면 "든든하게"는 사라짐)
+function availableOptions(q) {
+  const rest = remainingMenus();
+  return q.options.filter((o) => rest.some((m) => matches(m, q.key, o.value)));
+}
+
+// from번 질문부터 살펴보고, 선택지가 하나뿐인 질문은 답을 자동으로 정한 뒤 건너뛴다.
+// 물어볼 질문 번호를 돌려주고, 더 물어볼 게 없으면 -1을 돌려준다.
+function findNextQuestion(from) {
+  for (let i = from; i < QUESTIONS.length; i++) {
+    const opts = availableOptions(QUESTIONS[i]);
+    if (opts.length > 1) return i;
+    answers[QUESTIONS[i].key] = opts[0].value;
+  }
+  return -1;
+}
+
 // 지난 질문과 답은 그대로 두고, 바리스타가 잠깐 입력한 뒤 현재 질문을 보낸다.
 // justAnswered: 방금 답한 말풍선에만 등장 효과를 준다.
 function renderQuestion(justAnswered = false) {
   clearTimeout(chatTimer);
   const q = QUESTIONS[current];
-  progressText.textContent = `Q${current + 1} / ${QUESTIONS.length}`;
+  const no = asked.length;
+  progressText.textContent = `Q${no}`;
   progressFill.style.width = `${(current / QUESTIONS.length) * 100}%`;
-  backBtn.style.visibility = current === 0 ? "hidden" : "visible";
+  backBtn.style.visibility = no === 1 ? "hidden" : "visible";
 
-  let html = baristaMsg(GREETING, current === 0);
-  for (let i = 0; i < current; i++) {
-    html += baristaMsg(questionHtml(i)) + userMsg(answerText(QUESTIONS[i]), justAnswered && i === current - 1);
-  }
+  let html = baristaMsg(GREETING, no === 1);
+  asked.slice(0, -1).forEach((qi, n) => {
+    html += baristaMsg(questionHtml(n + 1, qi)) + userMsg(answerText(QUESTIONS[qi]), justAnswered && n === no - 2);
+  });
   chatLog.innerHTML = html + baristaMsg(TYPING, true);
   optionsBox.innerHTML = "";
   scrollChat();
 
   chatTimer = setTimeout(() => {
     chatLog.lastElementChild.remove();
-    chatLog.insertAdjacentHTML("beforeend", baristaMsg(questionHtml(current), true));
+    chatLog.insertAdjacentHTML("beforeend", baristaMsg(questionHtml(no, current), true));
     renderReplies(q);
     scrollChat();
   }, TYPING_MS);
@@ -214,7 +246,7 @@ function renderQuestion(justAnswered = false) {
 
 function renderReplies(q) {
   optionsBox.innerHTML = "";
-  q.options.forEach((opt) => {
+  availableOptions(q).forEach((opt) => {
     const btn = document.createElement("button");
     btn.className = "btn reply";
     btn.innerHTML = `<span class="emoji">${opt.emoji}</span><span>${opt.label}</span>`;
@@ -225,11 +257,13 @@ function renderReplies(q) {
 
 function selectAnswer(key, value) {
   answers[key] = value;
-  if (current < QUESTIONS.length - 1) {
-    current++;
-    renderQuestion(true);
-  } else {
+  const next = findNextQuestion(current + 1);
+  if (next === -1) {
     finishChat();
+  } else {
+    current = next;
+    asked.push(next);
+    renderQuestion(true);
   }
 }
 
@@ -248,15 +282,9 @@ function finishChat() {
 
 // ===== 추천 로직 =====
 // 질문 6개 중 몇 개가 맞는지로 일치도(%)를 계산하고, 일치도가 높은 순으로 줄 세운다.
-// 정확히 맞는 메뉴가 없어도 일치도가 가장 높은 메뉴가 1등이 되므로 빈 결과가 없다.
+// 질문 흐름이 모순된 답을 막아서 1등은 항상 100%이고, 혹시 맞는 메뉴가 없어도 가장 가까운 메뉴가 나온다.
 function matchRate(menu, a) {
-  let score = 0;
-  if (menu.temps.includes(a.temp)) score++;
-  if (menu.flavors.includes(a.flavor)) score++;
-  if (menu.sweet === a.sweet) score++;
-  if (menu.caffeine === a.caffeine) score++;
-  if (menu.milk === a.milk) score++;
-  if (menu.heavy === a.heavy) score++;
+  const score = QUESTIONS.filter((q) => matches(menu, q.key, a[q.key])).length;
   return Math.round((score / QUESTIONS.length) * 100);
 }
 
@@ -407,8 +435,9 @@ function showOrder() {
 
 // ===== 이벤트 =====
 function start() {
-  current = 0;
   answers = {};
+  current = findNextQuestion(0);
+  asked = [current];
   renderQuestion();
   showScreen("question");
 }
@@ -423,9 +452,11 @@ document.getElementById("custom-options").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip");
   if (chip) selectOption(chip.dataset.key, chip.dataset.value);
 });
+// 바로 전에 물어본 질문으로 돌아가고, 그 질문부터의 답(자동으로 정해진 답 포함)은 지운다.
 backBtn.addEventListener("click", () => {
-  if (current > 0) {
-    current--;
-    renderQuestion();
-  }
+  if (asked.length <= 1) return;
+  asked.pop();
+  current = asked[asked.length - 1];
+  QUESTIONS.slice(current).forEach((q) => delete answers[q.key]);
+  renderQuestion();
 });
