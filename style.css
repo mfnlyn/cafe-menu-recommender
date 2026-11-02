@@ -392,6 +392,11 @@ h1 {
   text-align: center;
 }
 
+.alt-card:hover {
+  border-color: var(--latte);
+  background: #fdf6ee;
+}
+
 .alt-emoji {
   font-size: 30px;
 }

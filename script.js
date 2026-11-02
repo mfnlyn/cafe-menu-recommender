@@ -321,9 +321,22 @@ function topicParticle(word) {
 }
 
 // ===== 결과 화면 =====
+let ranking = [];  // 일치도 순으로 줄 세운 메뉴 (맨 앞이 지금 보여주는 추천 메뉴)
+
 function showResult() {
-  const ranked = rankMenus(answers);
-  const { menu, rate } = ranked[0];
+  ranking = rankMenus(answers);
+  renderResult();
+}
+
+// "이것도 좋아요" 카드를 누르면 그 메뉴를 맨 앞으로 옮겨 추천 메뉴로 보여준다.
+function pickAlternative(i) {
+  const [chosen] = ranking.splice(i, 1);
+  ranking.unshift(chosen);
+  renderResult();
+}
+
+function renderResult() {
+  const { menu, rate } = ranking[0];
   picked = menu;
   document.getElementById("result-emoji").textContent = menu.emoji;
   document.getElementById("result-rate").textContent = `일치도 ${rate}%`;
@@ -331,7 +344,7 @@ function showResult() {
   document.getElementById("result-reason").textContent = makeReason(menu, answers);
 
   const tags = [
-    answers.temp === "hot" ? "#따뜻하게" : "#시원하게",
+    servingTemp(menu) === "hot" ? "#따뜻하게" : "#시원하게",
     FLAVOR_WORDS[menu.flavors.includes(answers.flavor) ? answers.flavor : menu.flavors[0]].tag,
     menu.sweet ? "#달콤" : "#달지않음",
     menu.caffeine ? "#카페인" : "#노카페인",
@@ -342,14 +355,14 @@ function showResult() {
     tags.map((t) => `<span class="tag">${t}</span>`).join("");
 
   // 이것도 좋아요: 2·3등 메뉴
-  document.getElementById("alt-list").innerHTML = ranked
+  document.getElementById("alt-list").innerHTML = ranking
     .slice(1, 3)
-    .map(({ menu: m, rate: r }) => `
-      <div class="alt-card">
+    .map(({ menu: m, rate: r }, n) => `
+      <button class="btn alt-card" data-index="${n + 1}">
         <span class="alt-emoji">${m.emoji}</span>
         <span class="alt-name">${m.name}</span>
         <span class="alt-rate">일치도 ${r}%</span>
-      </div>`)
+      </button>`)
     .join("");
 
   showScreen("result");
@@ -448,6 +461,10 @@ document.getElementById("custom-btn").addEventListener("click", openCustom);
 document.getElementById("custom-back-btn").addEventListener("click", () => showScreen("result"));
 document.getElementById("custom-done-btn").addEventListener("click", showOrder);
 document.getElementById("order-restart-btn").addEventListener("click", () => showScreen("start"));
+document.getElementById("alt-list").addEventListener("click", (e) => {
+  const card = e.target.closest(".alt-card");
+  if (card) pickAlternative(Number(card.dataset.index));
+});
 document.getElementById("custom-options").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip");
   if (chip) selectOption(chip.dataset.key, chip.dataset.value);
