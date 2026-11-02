@@ -144,7 +144,7 @@ const screens = {
   custom: document.getElementById("custom-screen"),
   order: document.getElementById("order-screen"),
 };
-const questionText = document.getElementById("question-text");
+const chatLog = document.getElementById("chat-log");
 const optionsBox = document.getElementById("options");
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
@@ -156,18 +156,67 @@ function showScreen(name) {
   window.scrollTo(0, 0);
 }
 
-// ===== 질문 화면 =====
-function renderQuestion() {
+// ===== 질문 화면: 바리스타와 대화 =====
+const GREETING = "어서 오세요! 몇 가지만 여쭤보고 딱 맞는 한 잔 찾아드릴게요 ☕";
+const TYPING_MS = 600;
+let chatTimer = null;
+
+function baristaMsg(html, isNew) {
+  return `<div class="msg barista${isNew ? " new" : ""}"><div class="avatar">☕</div><div class="bubble">${html}</div></div>`;
+}
+
+function userMsg(text, isNew) {
+  return `<div class="msg user${isNew ? " new" : ""}"><div class="bubble">${text}</div></div>`;
+}
+
+function questionHtml(i) {
+  return `<span class="q-no">Q${i + 1}</span>${QUESTIONS[i].text}`;
+}
+
+function answerText(q) {
+  const opt = q.options.find((o) => o.value === answers[q.key]);
+  return `${opt.emoji} ${opt.label}`;
+}
+
+const TYPING = `<span class="typing"><i></i><i></i><i></i></span>`;
+
+// 새 말풍선이 그려진 다음 프레임에 맨 아래로 스크롤한다.
+function scrollChat() {
+  requestAnimationFrame(() => {
+    chatLog.scrollTop = chatLog.scrollHeight;
+  });
+}
+
+// 지난 질문과 답은 그대로 두고, 바리스타가 잠깐 입력한 뒤 현재 질문을 보낸다.
+// justAnswered: 방금 답한 말풍선에만 등장 효과를 준다.
+function renderQuestion(justAnswered = false) {
+  clearTimeout(chatTimer);
   const q = QUESTIONS[current];
-  questionText.textContent = q.text;
-  progressText.textContent = `${current + 1} / ${QUESTIONS.length}`;
-  progressFill.style.width = `${((current + 1) / QUESTIONS.length) * 100}%`;
+  progressText.textContent = `Q${current + 1} / ${QUESTIONS.length}`;
+  progressFill.style.width = `${(current / QUESTIONS.length) * 100}%`;
   backBtn.style.visibility = current === 0 ? "hidden" : "visible";
 
+  let html = baristaMsg(GREETING, current === 0);
+  for (let i = 0; i < current; i++) {
+    html += baristaMsg(questionHtml(i)) + userMsg(answerText(QUESTIONS[i]), justAnswered && i === current - 1);
+  }
+  chatLog.innerHTML = html + baristaMsg(TYPING, true);
+  optionsBox.innerHTML = "";
+  scrollChat();
+
+  chatTimer = setTimeout(() => {
+    chatLog.lastElementChild.remove();
+    chatLog.insertAdjacentHTML("beforeend", baristaMsg(questionHtml(current), true));
+    renderReplies(q);
+    scrollChat();
+  }, TYPING_MS);
+}
+
+function renderReplies(q) {
   optionsBox.innerHTML = "";
   q.options.forEach((opt) => {
     const btn = document.createElement("button");
-    btn.className = "btn option";
+    btn.className = "btn reply";
     btn.innerHTML = `<span class="emoji">${opt.emoji}</span><span>${opt.label}</span>`;
     btn.addEventListener("click", () => selectAnswer(q.key, opt.value));
     optionsBox.appendChild(btn);
@@ -178,10 +227,23 @@ function selectAnswer(key, value) {
   answers[key] = value;
   if (current < QUESTIONS.length - 1) {
     current++;
-    renderQuestion();
+    renderQuestion(true);
   } else {
-    showResult();
+    finishChat();
   }
+}
+
+// 마지막 답을 보낸 뒤, 바리스타가 메뉴를 고르는 동안 잠깐 기다렸다가 결과로 넘어간다.
+function finishChat() {
+  clearTimeout(chatTimer);
+  optionsBox.innerHTML = "";
+  backBtn.style.visibility = "hidden";
+  progressFill.style.width = "100%";
+  chatLog.insertAdjacentHTML("beforeend",
+    userMsg(answerText(QUESTIONS[current]), true) +
+    baristaMsg("좋아요! 딱 맞는 한 잔 고르는 중이에요… " + TYPING, true));
+  scrollChat();
+  chatTimer = setTimeout(showResult, 1300);
 }
 
 // ===== 추천 로직 =====

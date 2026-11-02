@@ -21,12 +21,17 @@
 
     <!-- 질문 화면 -->
     <section id="question-screen" class="screen">
-      <div class="progress">
-        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
-        <span id="progress-text" class="progress-text">1 / 6</span>
+      <div class="chat-header">
+        <div class="avatar">☕</div>
+        <div class="chat-title">
+          <strong>바리스타</strong>
+          <span>취향 상담 중</span>
+        </div>
+        <span id="progress-text" class="progress-text">Q1 / 6</span>
       </div>
-      <h2 id="question-text" class="question"></h2>
-      <div id="options" class="options"></div>
+      <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      <div id="chat-log" class="chat-log"></div>
+      <div id="options" class="replies"></div>
       <button id="back-btn" class="btn text">← 이전 질문</button>
     </section>
 
