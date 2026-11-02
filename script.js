@@ -119,22 +119,22 @@ function selectAnswer(key, value) {
 }
 
 // ===== 추천 로직 =====
-// 조건이 많이 맞을수록 점수가 높고, 최고 점수 메뉴 중 하나를 고른다.
-// (모든 조합에 완전히 맞는 메뉴가 있지만, 혹시 없어도 가장 가까운 메뉴가 나오므로 빈 결과가 없다)
-function scoreMenu(menu, a) {
+// 질문 4개 중 몇 개가 맞는지로 일치도(%)를 계산하고, 일치도가 높은 순으로 줄 세운다.
+// 정확히 맞는 메뉴가 없어도 일치도가 가장 높은 메뉴가 1등이 되므로 빈 결과가 없다.
+function matchRate(menu, a) {
   let score = 0;
   if (menu.temps.includes(a.temp)) score++;
   if (menu.sweet === a.sweet) score++;
   if (menu.caffeine === a.caffeine) score++;
   if (menu.milk === a.milk) score++;
-  return score;
+  return Math.round((score / QUESTIONS.length) * 100);
 }
 
-function recommend(a) {
-  const scored = MENUS.map((menu) => ({ menu, score: scoreMenu(menu, a) }));
-  const best = Math.max(...scored.map((s) => s.score));
-  const candidates = scored.filter((s) => s.score === best).map((s) => s.menu);
-  return candidates[Math.floor(Math.random() * candidates.length)];
+// 일치도가 같은 메뉴끼리는 순서를 무작위로 섞어서, 다시 하면 다른 메뉴도 볼 수 있게 한다.
+function rankMenus(a) {
+  return MENUS
+    .map((menu) => ({ menu, rate: matchRate(menu, a), tiebreak: Math.random() }))
+    .sort((x, y) => y.rate - x.rate || x.tiebreak - y.tiebreak);
 }
 
 function makeReason(menu, a) {
@@ -155,8 +155,10 @@ function topicParticle(word) {
 
 // ===== 결과 화면 =====
 function showResult() {
-  const menu = recommend(answers);
+  const ranked = rankMenus(answers);
+  const { menu, rate } = ranked[0];
   document.getElementById("result-emoji").textContent = menu.emoji;
+  document.getElementById("result-rate").textContent = `일치도 ${rate}%`;
   document.getElementById("result-name").textContent =
     `${answers.temp === "hot" ? "따뜻한" : "아이스"} ${menu.name}`;
   document.getElementById("result-reason").textContent = makeReason(menu, answers);
@@ -169,6 +171,17 @@ function showResult() {
   ];
   document.getElementById("result-tags").innerHTML =
     tags.map((t) => `<span class="tag">${t}</span>`).join("");
+
+  // 이것도 좋아요: 2·3등 메뉴
+  document.getElementById("alt-list").innerHTML = ranked
+    .slice(1, 3)
+    .map(({ menu: m, rate: r }) => `
+      <div class="alt-card">
+        <span class="alt-emoji">${m.emoji}</span>
+        <span class="alt-name">${m.name}</span>
+        <span class="alt-rate">일치도 ${r}%</span>
+      </div>`)
+    .join("");
 
   showScreen("result");
 }
