@@ -6,7 +6,7 @@
   <title>카페 메뉴 추천 테스트</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -60,12 +60,25 @@
 
     <!-- 주문서 화면 -->
     <section id="order-screen" class="screen">
-      <div class="order-card">
-        <p class="order-title">주 문 서</p>
-        <div id="order-emoji" class="order-emoji"></div>
-        <h2 id="order-name" class="result-name"></h2>
-        <ul id="order-list" class="order-list"></ul>
-        <p class="order-footer">맛있게 준비해 드릴게요 ☕</p>
+      <div class="receipt-wrap">
+        <div class="receipt">
+          <p class="rc-shop">☕ 오늘의 한 잔</p>
+          <p class="rc-sub">ORDER RECEIPT</p>
+          <div class="rc-meta"><span>주문번호</span><span id="order-no"></span></div>
+          <div class="rc-meta"><span>일시</span><span id="order-date"></span></div>
+          <hr class="rc-line">
+          <div class="rc-item">
+            <span id="order-emoji" class="rc-emoji"></span>
+            <strong id="order-name" class="rc-name"></strong>
+            <span class="rc-qty">x 1</span>
+          </div>
+          <ul id="order-list" class="rc-options"></ul>
+          <hr class="rc-line double">
+          <p class="rc-thanks">맛있게 준비해 드릴게요</p>
+          <p class="rc-thanks-en">THANK YOU · SEE YOU AGAIN</p>
+          <div class="rc-barcode"></div>
+          <p id="order-code" class="rc-code"></p>
+        </div>
       </div>
       <button id="order-restart-btn" class="btn primary">다시 하기</button>
     </section>

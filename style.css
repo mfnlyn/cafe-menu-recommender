@@ -365,56 +365,161 @@ h1,
   color: #fff;
 }
 
-/* 주문서 화면 */
-.order-card {
-  position: relative;
-  margin-bottom: 24px;
-  padding: 28px 22px 22px;
-  border: 2px dashed var(--latte);
-  border-radius: 16px;
-  background: #fff;
+/* 주문서 화면: 영수증 */
+.card:has(#order-screen.active) {
+  background: var(--cream);
+  transition: background 0.3s;
 }
 
-.order-title {
+.receipt-wrap {
+  margin: 0 auto 24px;
+  max-width: 340px;
+  filter: drop-shadow(0 6px 12px rgba(74, 44, 29, 0.22));
+}
+
+#order-screen.active .receipt-wrap {
+  animation: printOut 0.9s steps(12) both;
+}
+
+@keyframes printOut {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 -20px 0); }
+}
+
+.receipt {
+  --paper: #fffefb;
+  --ink: #3b2a20;
+  padding: 30px 22px 28px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Nanum Gothic Coding", "D2Coding", monospace;
+  font-size: 14px;
+  /* 위아래 지그재그 절취선 */
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 14px 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 51% repeat-x;
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 14px 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 51% repeat-x;
+}
+
+.rc-shop {
   font-family: "Gowun Batang", serif;
   font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.3em;
+  font-size: 20px;
+  color: var(--espresso);
+}
+
+.rc-sub {
+  margin-bottom: 16px;
+  font-size: 11px;
+  letter-spacing: 0.35em;
   color: var(--muted);
 }
 
-.order-emoji {
-  font-size: 56px;
-  margin: 8px 0 4px;
+.rc-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
 }
 
-.order-list {
-  list-style: none;
-  margin: 12px 0 16px;
-  border-top: 1px dashed var(--latte);
+.rc-line {
+  margin: 14px 0;
+  border: none;
+  border-top: 1.5px dashed var(--ink);
+  opacity: 0.5;
+}
+
+.rc-line.double {
+  height: 5px;
+  border-bottom: 1.5px dashed var(--ink);
+}
+
+.rc-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
   text-align: left;
 }
 
-.order-list li {
+.rc-emoji {
+  font-size: 22px;
+}
+
+.rc-name {
+  flex: 1;
+  font-size: 16px;
+  word-break: keep-all;
+}
+
+.rc-qty {
+  font-weight: 700;
+}
+
+.rc-options {
+  list-style: none;
+  text-align: left;
+}
+
+.rc-options li {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 10px 2px;
-  border-bottom: 1px dashed var(--cream);
-  font-size: 15px;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0 3px 12px;
 }
 
-.order-list li span {
+.rc-options li span {
   color: var(--muted);
+  white-space: nowrap;
 }
 
-.order-list li strong {
-  color: var(--espresso);
+.rc-options li span::before {
+  content: "- ";
+}
+
+/* 항목과 값 사이를 잇는 점선 */
+.rc-dots {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1.5px dotted var(--latte);
+  transform: translateY(-4px);
+}
+
+.rc-options li strong {
+  max-width: 60%;
   text-align: right;
   word-break: keep-all;
 }
 
-.order-footer {
-  font-size: 14px;
+.rc-thanks {
+  font-family: "Gowun Batang", serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.rc-thanks-en {
+  margin-bottom: 16px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+/* 장식용 바코드 */
+.rc-barcode {
+  height: 42px;
+  margin: 0 12px;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 4px,
+    var(--ink) 4px 5px, transparent 5px 8px,
+    var(--ink) 8px 11px, transparent 11px 12px,
+    var(--ink) 12px 13px, transparent 13px 16px);
+}
+
+.rc-code {
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.25em;
   color: var(--muted);
 }

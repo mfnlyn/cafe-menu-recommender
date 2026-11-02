@@ -326,9 +326,20 @@ function showOrder() {
   document.getElementById("order-list").innerHTML = visibleGroups(picked)
     .map((g) => {
       const value = g.multi ? (custom[g.key].join(", ") || "없음") : custom[g.key];
-      return `<li><span>${g.title}</span><strong>${value}</strong></li>`;
+      return `<li><span>${g.title}</span><i class="rc-dots"></i><strong>${value}</strong></li>`;
     })
     .join("");
+
+  // 영수증 느낌을 위한 주문번호·일시·바코드 번호 (실제 주문과는 무관)
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const orderNo = String(Math.floor(Math.random() * 9000) + 1000);
+  document.getElementById("order-no").textContent = `#${orderNo}`;
+  document.getElementById("order-date").textContent =
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById("order-code").textContent =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${orderNo}`;
+
   showScreen("order");
 }
 
