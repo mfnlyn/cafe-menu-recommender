@@ -1,0 +1,228 @@
+:root {
+  --bg: #f5ede3;
+  --card: #fffaf4;
+  --espresso: #4a2c1d;
+  --brown: #7b4b2a;
+  --latte: #c69c72;
+  --cream: #efe0cc;
+  --text: #3b2a20;
+  --muted: #8a7363;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--bg);
+  background-image: radial-gradient(circle at 20% 10%, #fbf3e8 0%, transparent 45%),
+                    radial-gradient(circle at 85% 90%, #ead8c2 0%, transparent 40%);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 40px 28px;
+  box-shadow: 0 12px 40px rgba(74, 44, 29, 0.12);
+  text-align: center;
+}
+
+/* 화면 전환 */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 시작 화면 */
+.hero-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-size: 26px;
+  color: var(--espresso);
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+
+/* 버튼 */
+.btn {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn.primary {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--brown);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.btn.primary:hover {
+  background: var(--espresso);
+}
+
+.btn.text {
+  margin-top: 20px;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.btn.text:hover {
+  color: var(--brown);
+}
+
+/* 진행 표시 */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--cream);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--latte);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* 질문 화면 */
+.question {
+  font-size: 22px;
+  color: var(--espresso);
+  margin-bottom: 28px;
+  word-break: keep-all;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 20px;
+  border: 2px solid var(--cream);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  font-size: 17px;
+  text-align: left;
+}
+
+.option:hover {
+  border-color: var(--latte);
+  background: #fdf6ee;
+}
+
+.option .emoji {
+  font-size: 26px;
+}
+
+/* 결과 화면 */
+.result-label {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.result-emoji {
+  font-size: 72px;
+  margin: 12px 0 4px;
+}
+
+.result-name {
+  font-size: 28px;
+  color: var(--espresso);
+  margin-bottom: 24px;
+}
+
+.reason {
+  background: var(--cream);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.reason h3 {
+  font-size: 15px;
+  color: var(--brown);
+  margin-bottom: 8px;
+}
+
+.reason p {
+  word-break: keep-all;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--latte);
+  color: var(--brown);
+  font-size: 13px;
+}
